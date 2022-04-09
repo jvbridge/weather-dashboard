@@ -7,27 +7,76 @@
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-flex">
         <a class="navbar-brand ms-3" href ="#">Weather dashboard</a>
-        <div class="ms-auto text-light">
+        <div class="ms-auto text-light me-3">
             <div id="current-location">Current Location</div>
             <div id="current-time">Current time</div>
         </div>
     </nav>
     <main>
-        <div class="container">
+        <div class="container-fluid">
             <div class="row align-items-start">
-                <div id="search-container" class="col-lg-3">
-                    <div id="search-card" class="card bg-primary text-light mt-3 ">
+                <div id="search-container" class="col-lg-5 col-xl-3 col-xxl-3">
+                    <div id="search-card" class="card bg-primary text-light mt-3">
                         <div class="card-body">
                             <h5 class="car-title">Search for a city</h5>
-                            <input class="form-control-me-2 me-3 " type="search" placeholder="Search a location" aria-label="Search"><button class="btn btn-light me-3 " type="submit">Search</button>
+                            <div class="w-100 container-fluid">
+                                <input class="form-control-me-2 me-3 " type="search" placeholder="Search a location" aria-label="Search">
+                                <button class="btn btn-light me-3" type="submit">Search</button>
+                            </div>
                         </div>
                     </div>
                     <div id="search results"></div>
                 </div>
-                <div id="main information" class="col">
-                    <div id="weekly weather" class="card bg-primary text-light mt-3 col-lg-9">
+                <div id="main information" class="col-lg-7 col-xl-8 col-xxl-9">
+                    <div id="weekly weather" class="card bg-primary text-light mt-3 me-auto">
                         <div class="card-body">
-                            <h5 class="car-title">Weather This week</h5>
+                            <h5 class="car-title">Weather this week</h5>
+                            <div id="weather-day-cards-container" class="container text-dark">
+                                <div id="weather-card-row" class="row">
+                                    <div id="day-0" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Today</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-1" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Tues</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-2" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">wed?</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-3" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">thurs</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-4" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">fri</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-5" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">sat</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                    <div id="day-6" class="card col-xl m-2">
+                                        <div class="card-body">
+                                            <h6 class="card-title">sun</h5>
+                                            <div>Weather info</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
