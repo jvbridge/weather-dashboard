@@ -5,7 +5,18 @@
  * An array containing references to jquery elements for every day of the week
  * index 0 is today, index 1 is tomorrow etc. 
  */
-var dayEles = []
+var dayEles = [];
+
+/**
+ * search box jquery object reference
+ */
+var searchBox = $("#search-box");
+
+/**
+ * search button jquery object reference
+ */
+var searchButton = $("#search-button");
+
 /**
  * The number of days we are going to display on the main day bar
  */
@@ -41,6 +52,7 @@ const weatherApiUrl = "api.openweathermap.org/data/2.5/weather";
  */
 var lat=37;
 var long=-122;
+
 
 
 /*******************************************************************************
@@ -98,6 +110,25 @@ function setDays(){
     });
 
 }
+
+/**
+ * Searches for cities and appropriately adds/modifies DOM elements for it.
+ * @param {string} queryString 
+ */
+function searchCity (queryString){
+    console.log("doing an API serach with: " + queryString);
+    
+    // clear the search box first
+    searchBox.val("");
+
+    // fetch from the API
+    
+    // check if response is good
+
+    // set DOM elements as approriate
+    
+}
+
 /*******************************************************************************
  * Initialization
  ******************************************************************************/ 
@@ -107,3 +138,24 @@ setDays();
 setInterval(() => {
     setTime()
 }, 1000);
+
+// add a keydown event for hitting enter for the search bar.
+document.addEventListener('keydown', (event) =>{
+    // check if the key is "enter" return if not.
+    if (event.key !== "Enter"){
+        return;
+    }
+
+    // check if the bar is focused return if not.
+    if (!($("#search-box").is(":focus"))) {
+        return;
+      }
+    
+    // get the search bar text
+    var searchString = searchBox.val();
+    searchCity(searchString);
+
+});
+
+// add a listener for the search button to send the search as well
+searchButton.on("click", searchCity(searchBox.val()));
