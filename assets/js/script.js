@@ -54,7 +54,6 @@ var lat=37;
 var long=-122;
 
 
-
 /*******************************************************************************
  * functions
  ******************************************************************************/ 
@@ -116,7 +115,7 @@ function setDays(){
  * @param {string} queryString 
  */
 function searchCity (queryString){
-    console.log("doing an API serach with: " + queryString);
+    console.log("doing an API search with: " + queryString);
     
     // clear the search box first
     searchBox.val("");
@@ -127,6 +126,26 @@ function searchCity (queryString){
 
     // set DOM elements as approriate
     
+    // add the city to the history 
+
+    // set the current weather elements to reflect what we want.
+
+}
+
+/**
+ * sets a card's weather conditions given both an object and a card
+ * @param {object} card the jquery object for that card
+ * @param {object} conditions the conditions to set that card to
+ */
+function setCard(card, conditions){
+    // City name
+    // Date
+// icon for conditions
+// temperature
+// humidity
+// wind speed
+// UV index
+
 }
 
 /*******************************************************************************
