@@ -73,10 +73,11 @@ function setDays(){
 }
 
 
+
 /**
  * Fetches the weather from the weather API
  */
-function fetchWeather(){
+ function fetchWeather(){
 
     console.log("fetching...");
     var requestString = weatherApiUrl + "?id=524901&appid="+ myApiKey;
@@ -97,7 +98,6 @@ function fetchWeather(){
     });
 
 }
-
 /*******************************************************************************
  * Initialization
  ******************************************************************************/ 
