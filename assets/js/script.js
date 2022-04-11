@@ -344,7 +344,7 @@ function setWeeklyWeather(days){
 function createCard (){
     var cardNumber = dayEles.length;
     console.log("creating card number: ", cardNumber);
-    var card = $("<div id=day-'" + cardNumber + "' class='card m-2 col-2'></div>");
+    var card = $("<div id=day-'" + cardNumber + "' class='card m-2 col-xl-2 col-lg-3'></div>");
     
     var cardBody = $("<div class='card-body'></div>");
 
