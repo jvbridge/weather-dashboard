@@ -65,10 +65,14 @@ const myApiKey = "a8edca00c7d55cb7839e4e8d9ac5b165";
 const pubApiKey = "b1b15e88fa797225412429c1c50c122a1"
 
 /**
- * 
+ * The link to the open weather API
  */
 const weatherApiUrl = "https://api.openweathermap.org/data/2.5/weather";
 
+/**
+ * 
+ */
+const geoApi = "http://api.openweathermap.org/geo/1.0/direct";
 /**
  * Current latitude and longitude
  */
@@ -106,13 +110,14 @@ function setDays(){
 }
 
 
-
 /**
  * Fetches the weather from the weather API
+ * @param {number} lat the latitude where you are retrieving the weather
+ * @param {number} lon the longitunde where you are retrieving the weather
  * @returns {object} the conditions we require from the weather API
  */
- async function fetchWeather(query){ 
-    console.log("fetching...");
+ async function fetchWeather(lat, lon){ 
+    console.log("fetching weather");
 
     var lat;
     var lon;
@@ -136,35 +141,73 @@ function setDays(){
         return data;
     });
     return data;
-    // TODO true querying logic
+}
 
+/**
+ * Returns latitude and longitude of a search query string.
+ * @param {string} query 
+ * @returns {object} location - holder object for the information
+ * @returns {number} location.lat - the latitude of the location
+ * @returns {number} location.lon - the longitude of the location
+ * @returns {null} returned if there are no results
+ */
+async function fetchLocation(query){
+    // format the request
+    var requestString = geoApi;
+    requestString += "?q=" + query;
+    requestString += "&limit=1";
+    requestString += "&appid=" + myApiKey;
+
+    // grab the data!
+    var geoData = await fetch(requestString).then((request)=>{
+        // if all is well and good send us the goods
+        if(request.status == 200){
+            return request.json();
+        }
+        return null;
+    }).then((data)=>{
+        // if we got data, return said data 
+        if (data){
+            return {lat: data[0].lat, lon: data[0].lon};
+        }
+        return null;
+        
+    });
+    
+    // return whatever we got from the fetch request
+    return geoData;
 }
 
 /**
  * Searches for cities and appropriately adds/modifies DOM elements for it.
- * @param {string} queryString 
+ * @param {string} query the query the user sent the engine
  */
-function searchCity (queryString){
-    console.log("doing an API search with: " + queryString);
+ async function searchCity (query){
+    console.log("doing an API search with: " + query);
     
     // clear the search box first
     searchBox.val("");
 
-    // fetch from the API
-    
-    // check if response is good
+    // TODO: use local storage to hold results
 
-    // set DOM elements as approriate
+    // fetch from the API
+    var location = await fetchLocation(query);
+    // check if response is good
+    if (!location){
+        console.log("didn't get a result for searching for: " + query);
+        return;
+    }
+
+    // fetch the city from the API
+    var weather = await fetchWeather(location.lat, location.lon);
     
-    setCity(fetchWeather(queryString));
+    // propogate those values to the DOM
+    setCity(weather);
 
     // add the city to the history 
-
-    searchHistory.push(queryString);
-    addSearchHistory(queryString);
-    // set the current weather elements to reflect what we want.
+    searchHistory.push(query);
+    addSearchHistory(query);
 }
-
 
 
 /**
@@ -183,8 +226,8 @@ function setCard(card, conditions){
 }
 
 /**
- * Makes a search history element for the given search query and appends it to 
- * the DOM
+ * Makes a search history element for the given search query and appends 
+ * it to the DOM
  * @param {string} query 
  */
 function addSearchHistory(query){
@@ -198,7 +241,7 @@ function addSearchHistory(query){
     // TODO formatting for the results
 
     // making the text a clickable link that sets the information
-    text.on("click", setCity(query));
+    text.on("click", ()=>setCity(query));
     
     body.append(text);
     card.append(body);
