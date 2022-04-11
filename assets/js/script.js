@@ -8,7 +8,7 @@
 var dayEles = [];
 
 /**
- * A list of the previously searched terms
+ * A list of the previously searched terms and their results
  * @type {string[]}
  */
 var searchHistory = [];
@@ -220,13 +220,17 @@ async function fetchLocation(query){
     // set the location
     locationEle.text(niceQuery);
 
-    // add the city to the history 
-    searchHistory.push({
+    var historyItem = {
         query: niceQuery,
-        currentWeaher: weather.current,
-        days: weather.days
-    });
-    addSearchHistory(niceQuery);
+        currentWeather: weather.current,
+        days: weather.daily
+    }
+
+    console.log("adding a history item with the item: ", historyItem);
+    console.log("we have access to this weather:", weather);
+    // add the city to the history 
+    searchHistory.push(historyItem);
+    addSearchHistoryEle(historyItem);
 }
 
 
@@ -277,28 +281,46 @@ function setCard(card, conditions, dayOfWeek){
 /**
  * Makes a search history element for the given search query and appends 
  * it to the DOM
- * @param {string} query 
+ * @param {Object} historyItem - an object from the searchHistory[] array 
  */
-function addSearchHistory(query){
+function addSearchHistoryEle(historyItem){
     // make our base item with the appropiate data information
     var searchItem = $("<div class='search-item mt-3' data-query='"+
-    query +"'></div>");
+    historyItem.query +"'></div>");
 
     var card = $("<div class='card bg-primary text-light'></div>");
     var body = $("<div class='card-body'></div>");
-    var text = $("<h5>" + query + "<h5>");
+    var text = $("<h5>" + historyItem.query + "<h5>");
     // TODO formatting for the results
 
     // making the text a clickable link that sets the information
     text.on("click", ()=>{
         console.log("Clicked on: ", text);
+        // re-populate the dom with the elements used to make this entry
+        retrievePreviousSearch(historyItem);
     });
-    
+
     body.append(text);
     card.append(body);
     searchItem.append(card);
-
     searchHistoryContainer.prepend(searchItem);
+}
+
+/**
+ * given an item in the search history array, put it up to the screen
+ * @param {object} historyItem - item in the searchhistory[] array
+ */
+function retrievePreviousSearch(historyItem){
+    console.log("retrieving history with item: ", historyItem)
+    
+    // set the location correctly
+    locationEle.text(historyItem.query);
+
+    // set the current weather
+    setCurrentWeather(historyItem.currentWeather);
+
+    // set the weather for the 5-day forecast
+    setWeeklyWeather(historyItem.days);
 }
 
 /**
@@ -307,7 +329,6 @@ function addSearchHistory(query){
  */
 function setCurrentWeather(conditions){
     // City name
-    console.log("Got a city! Lets update our DOM");
     console.log(conditions);
     
     // icon for conditions
