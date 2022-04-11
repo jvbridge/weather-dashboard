@@ -119,16 +119,15 @@ function setDays(){
  async function fetchWeather(lat, lon){ 
     console.log("fetching weather");
 
-    var lat;
-    var lon;
-
+    // formatting the request
     var requestString = weatherApiUrl + "?"
     requestString += "&lat=" + lat;
     requestString += "&lon=" + lon;
     requestString += "&appid=" + myApiKey;
     console.log("request string: " + requestString);
+
+    // fetching the data from the API
     var data  = await fetch(requestString).then((response) =>{
-        console.log(response);
         if (response.status === 200){
             return response.json();
         }
@@ -138,6 +137,7 @@ function setDays(){
         if (typeof data == "number"){
             return data;
         }
+        console.log("Data found: ", data);
         return data;
     });
     return data;
@@ -157,7 +157,7 @@ async function fetchLocation(query){
     requestString += "?q=" + query;
     requestString += "&limit=1";
     requestString += "&appid=" + myApiKey;
-
+    console.log("getting the location of: " + query);
     // grab the data!
     var geoData = await fetch(requestString).then((request)=>{
         // if all is well and good send us the goods
@@ -168,10 +168,10 @@ async function fetchLocation(query){
     }).then((data)=>{
         // if we got data, return said data 
         if (data){
+            console.log("found something: ", data);
             return {lat: data[0].lat, lon: data[0].lon};
         }
         return null;
-        
     });
     
     // return whatever we got from the fetch request
@@ -216,6 +216,8 @@ async function fetchLocation(query){
  * @param {object} conditions the conditions to set that card to
  */
 function setCard(card, conditions){
+    // TODO
+    
     // City name
     // Date
     // icon for conditions
@@ -256,7 +258,8 @@ function addSearchHistory(query){
  */
 function setCity(conditions){
     // City name
-    locationEle.text(conditions.cityName);
+    console.log("Got a city! Lets update our DOM");
+    console.log(conditions);
 
     // Date -> set up localization? TODO
 
