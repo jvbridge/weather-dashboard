@@ -292,6 +292,15 @@ function setCurrentWeather(conditions){
 }
 
 /**
+ * Takes the array returned from the weekly weather and propgates it to the DOM
+ * @param {object[]} days 
+ */
+function setWeeklyWeather(days){
+    console.log("Got: ", days);
+    // TODO: propogate
+}
+
+/**
  * Creates a card and adds it to the array of cards, as well as to the DOM
  */
 function createCard (){
@@ -343,4 +352,21 @@ for (var i = 0; i < daysDisplayed; i++){
     createCard();
 }
 
-// TODO: local storage for search history
+// set our default location (san francisco)
+// TODO: use local storage to remember location
+
+// get a location for the position
+ navigator.geolocation.getCurrentPosition(async (position) =>{
+    // if we are successful
+    console.log("success!");
+    var weather = await fetchWeather(position.coords.latitude, position.coords.longitude)
+    setCurrentWeather(weather.current);
+    setWeeklyWeather(weather.daily);
+}, async () =>{
+    // if we are not successful default to San Francisco
+    console.log("failed to get a location");
+    var weather = await fetchWeather(37, -122);
+    setCurrentWeather(weather.current);
+    setWeeklyWeather(weather.daily);
+    locationEle.text("San Francisco");
+});
