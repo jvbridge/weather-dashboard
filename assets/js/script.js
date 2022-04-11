@@ -38,10 +38,6 @@ var searchButton = $("#search-button");
  * The number of days we are going to display on the main day bar
  */
 var daysDisplayed = 7
-// for loop getting and adding the references to dayEles[]
-for (var i = 0; i < daysDisplayed; i++){
-    dayEles.push($("day-" + i));
-}
 
 /**
  * Reference to the current time element
@@ -52,6 +48,11 @@ var timeEle = $("#current-time");
  * Reference to the current location element
  */
 var locationEle = $("#current-location");
+
+/**
+ * Reference to the weather cards for the weekly forecast
+ */
+var weatherCardRow =  $("#weather-card-row");
 
 /**
  * My weather API key
@@ -65,20 +66,19 @@ const myApiKey = "a8edca00c7d55cb7839e4e8d9ac5b165";
 const pubApiKey = "b1b15e88fa797225412429c1c50c122a1"
 
 /**
- * The link to the open weather API
+ * The link to the open weather API for One Call
  */
-const weatherApiUrl = "https://api.openweathermap.org/data/2.5/weather";
+const oneCallApi = "https://api.openweathermap.org/data/2.5/onecall";
 
 /**
- * 
+ * The link to the geo locator API
  */
 const geoApi = "http://api.openweathermap.org/geo/1.0/direct";
-/**
- * Current latitude and longitude
- */
-var lat=37;
-var lon=-122;
 
+/**
+ * The image source base URL
+ */
+const imageSrc = "http://openweathermap.org/img/wn/";
 
 /*******************************************************************************
  * functions
@@ -120,10 +120,11 @@ function setDays(){
     console.log("fetching weather");
 
     // formatting the request
-    var requestString = weatherApiUrl + "?"
-    requestString += "&lat=" + lat;
-    requestString += "&lon=" + lon;
-    requestString += "&appid=" + myApiKey;
+    var requestString = oneCallApi + "?" // starting
+    requestString += "&lat=" + lat; // latitude
+    requestString += "&lon=" + lon; // longitude
+    requestString += "&units=imperial" // imperial units for us backwards Yanks
+    requestString += "&appid=" + myApiKey; // API key
     console.log("request string: " + requestString);
 
     // fetching the data from the API
@@ -200,13 +201,25 @@ async function fetchLocation(query){
 
     // fetch the city from the API
     var weather = await fetchWeather(location.lat, location.lon);
-    
+
     // propogate those values to the DOM
-    setCity(weather);
+    setCurrentWeather(weather.current);
+
+    // Format search query string to look better
+    var tmpQuery = query.toLowerCase();
+    var niceArr = tmpQuery.split(" ");
+    niceQuery = ""; // our nice query
+    niceArr.forEach((value)=>{
+        tmpStr = value.charAt(0).toUpperCase() + value.slice(1);
+        niceQuery += tmpStr + " ";
+    })
+
+    // set the location
+    locationEle.text(niceQuery);
 
     // add the city to the history 
-    searchHistory.push(query);
-    addSearchHistory(query);
+    searchHistory.push(niceQuery);
+    addSearchHistory(niceQuery);
 }
 
 
@@ -216,7 +229,7 @@ async function fetchLocation(query){
  * @param {object} conditions the conditions to set that card to
  */
 function setCard(card, conditions){
-    // TODO
+    // TODO: make this set a card given an index
     
     // City name
     // Date
@@ -243,7 +256,7 @@ function addSearchHistory(query){
     // TODO formatting for the results
 
     // making the text a clickable link that sets the information
-    text.on("click", ()=>setCity(query));
+    text.on("click", ()=>setCurrentWeather(query));
     
     body.append(text);
     card.append(body);
@@ -256,20 +269,43 @@ function addSearchHistory(query){
  * Sets the DOM to reflect the given data
  * @param {object} conditions conditions object fetched from database
  */
-function setCity(conditions){
+function setCurrentWeather(conditions){
     // City name
     console.log("Got a city! Lets update our DOM");
     console.log(conditions);
 
-    // Date -> set up localization? TODO
-
+    // Date -> TODO:set up localization
     
     // icon for conditions
 
     // temperature
+    $("#current-temp").text("Currently: " + conditions.temp + " degrees");
+
     // humidity
+    $("#current-hum").text("Humidity: " + conditions.humidity + "%");
+
     // wind speed
+    $("#current-wind").text("Wind: " + conditions.wind_speed + " mph");
+
     // UV index
+    $("#current-uv").text("UV index: " + conditions.uvi);
+}
+
+/**
+ * Creates a card and adds it to the array of cards, as well as to the DOM
+ */
+function createCard (){
+    var cardNumber = dayEles.length;
+    var card = $("<div id=day-'" + cardNumber + "' class='card m-2'></div>");
+    var cardBody = $("<div class='card-body'></div>");
+    var cardTitle = $("<h6 class='card-title'></h6>");
+    var weatherInfo = $("<div id='day-"+ cardNumber + "-info></div>");
+
+    card.append(cardBody);
+    card.append(cardTitle);
+    card.append(weatherInfo);
+    weatherCardRow.append(card);
+    dayEles.push(card);
 }
 
 /*******************************************************************************
@@ -300,6 +336,11 @@ document.addEventListener('keydown', (event) =>{
 });
 
 // add a listener for the search button to send the search as well
-searchButton.on("click", ()=> searchCity(searchBox.val()));
+searchButton.on("click", ()=>searchCity(searchBox.val()));
+
+// for loop getting and adding the references to dayEles[]
+for (var i = 0; i < daysDisplayed; i++){
+    createCard();
+}
 
 // TODO: local storage for search history
