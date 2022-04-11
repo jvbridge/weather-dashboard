@@ -68,7 +68,7 @@ const pubApiKey = "b1b15e88fa797225412429c1c50c122a1"
 /**
  * The link to the open weather API for One Call
  */
-const oneCallApi = "https://api.openweathermap.org/data/2.5/onecall";
+const oneCallApi = "http://api.openweathermap.org/data/2.5/onecall";
 
 /**
  * The link to the geo locator API
