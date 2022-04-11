@@ -80,7 +80,16 @@ const geoApi = "http://api.openweathermap.org/geo/1.0/direct";
  */
 const imageSrc = "http://openweathermap.org/img/wn/";
 
+/**
+ * The reverse Geo Api end point, used for when you allow the location of the 
+ * browser
+ */
 const reverseGeoApi = "http://api.openweathermap.org/geo/1.0/reverse"
+
+/**
+ * Local storage key for the history objects. Used to store searchHistory[]
+ */
+const historyKey = "search-history";
 
 /*******************************************************************************
  * functions
@@ -231,6 +240,8 @@ async function fetchLocation(query){
     // add the city to the history 
     searchHistory.push(historyItem);
     addSearchHistoryEle(historyItem);
+    // store it locally for later use
+    setLocalStorage();
 }
 
 
@@ -248,7 +259,7 @@ function setCard(card, conditions, dayOfWeek){
     if (dayOfWeek === 0){
         title = "Today";
     } else if (dayOfWeek === 1) {
-        title = "Tom";
+        title = "Tommorrow";
     } else{
         var day = moment();
         day.add(dayOfWeek,"days");
@@ -258,7 +269,6 @@ function setCard(card, conditions, dayOfWeek){
 
 
     console.log("card children: ", card.children().children());
-    // TODO: make this set a card given an index
     var weatherInfo = card.children().children(".weather-info");
     // set the title
     card.children().find("h6").text(title);
@@ -328,11 +338,6 @@ function retrievePreviousSearch(historyItem){
  * @param {object} conditions conditions object fetched from database
  */
 function setCurrentWeather(conditions){
-    // City name
-    console.log(conditions);
-    
-    // icon for conditions
-
     // temperature
     $("#current-temp").text("Currently: " + conditions.temp + " degrees");
 
@@ -365,7 +370,7 @@ function setWeeklyWeather(days){
 function createCard (){
     var cardNumber = dayEles.length;
     console.log("creating card number: ", cardNumber);
-    var card = $("<div id=day-'" + cardNumber + "' class='card m-2 col-xl-2 col-lg-3'></div>");
+    var card = $("<div id=day-'" + cardNumber + "' class='card m-2 col-xl-2 col-lg-3 col-md-4'></div>");
     
     var cardBody = $("<div class='card-body'></div>");
 
@@ -395,6 +400,29 @@ async function decodeLocation(lat, lon){
     });
 
     return ret;
+}
+
+/**
+ * Stores the previous searches to local storage
+ */
+function setLocalStorage(){
+    localStorage.setItem(historyKey, JSON.stringify(searchHistory));
+}
+
+/**
+ * Retrieves the previous searches from local storage, puts them onto the DOM
+ */
+function getLocalStorage(){
+    var prevSearchHistory = localStorage.getItem(historyKey);
+    // check if we got something
+    if(prevSearchHistory){
+        // parse it to an array
+        prevSearchHistory = JSON.parse(prevSearchHistory);
+        // now we iterate over that array and add the history item to the DOM
+        prevSearchHistory.forEach((value)=>{
+            addSearchHistoryEle(value);
+        });
+    }
 }
 
 /*******************************************************************************
@@ -432,8 +460,9 @@ for (var i = 0; i < daysDisplayed; i++){
     createCard();
 }
 
-// set our default location (san francisco)
-// TODO: use local storage to remember location
+
+// now we get our old local storage
+getLocalStorage();
 
 // get a location for the position
  navigator.geolocation.getCurrentPosition(async (position) =>{
@@ -445,7 +474,12 @@ for (var i = 0; i < daysDisplayed; i++){
     setCurrentWeather(weather.current);
     setWeeklyWeather(weather.daily);
 }, async () =>{
-    // if we are not successful default to San Francisco
+    // no location given, check to see if we've searched somewhere, and apply it
+    if (searchHistory.length){
+        retrievePreviousSearch(searchHistory[searchHistory.length -1]);
+        return;
+    }
+    // if we are not successful with either, default to San Francisco
     console.log("failed to get a location");
     var weather = await fetchWeather(37, -122);
     setCurrentWeather(weather.current);
