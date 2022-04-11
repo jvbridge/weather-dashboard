@@ -8,6 +8,23 @@
 var dayEles = [];
 
 /**
+ * A list of the previously searched terms
+ * @type {string[]}
+ */
+var searchHistory = [];
+
+/**
+ * A list of the search history jquery objects for their DOM elements 
+ * @type {object[]}
+ */
+var searchHistoryEles = [];
+
+/**
+ * A reference to the jquery object for the search history container
+ */
+var searchHistoryContainer = $("#search-history");
+
+/**
  * search box jquery object reference
  */
 var searchBox = $("#search-box");
@@ -30,7 +47,12 @@ for (var i = 0; i < daysDisplayed; i++){
  * Reference to the current time element
  */
 var timeEle = $("#current-time");
-    
+   
+/**
+ * Reference to the current location element
+ */
+var locationEle = $("#current-location");
+
 /**
  * My weather API key
  */
@@ -43,15 +65,19 @@ const myApiKey = "a8edca00c7d55cb7839e4e8d9ac5b165";
 const pubApiKey = "b1b15e88fa797225412429c1c50c122a1"
 
 /**
+ * The link to the open weather API
+ */
+const weatherApiUrl = "https://api.openweathermap.org/data/2.5/weather";
+
+/**
  * 
  */
-const weatherApiUrl = "api.openweathermap.org/data/2.5/weather";
-
+const geoApi = "http://api.openweathermap.org/geo/1.0/direct";
 /**
  * Current latitude and longitude
  */
 var lat=37;
-var long=-122;
+var lon=-122;
 
 
 /*******************************************************************************
@@ -84,53 +110,105 @@ function setDays(){
 }
 
 
-
 /**
  * Fetches the weather from the weather API
+ * @param {number} lat the latitude where you are retrieving the weather
+ * @param {number} lon the longitunde where you are retrieving the weather
+ * @returns {object} the conditions we require from the weather API
  */
- function fetchWeather(){
+ async function fetchWeather(lat, lon){ 
+    console.log("fetching weather");
 
-    console.log("fetching...");
-    var requestString = weatherApiUrl + "?id=524901&appid="+ myApiKey;
-    // my string
-    // var requestString = "api.openweathermap.org/data/2.5/weather?id=524901&appid=a8edca00c7d55cb7839e4e8d9ac5b165"
-    // test string
-    // var requestString = "https://api.openweathermap.org/data/2.5/weather?id=524901&appid=a8edca00c7d55cb7839e4e8d9ac5b165"
-    // var requestString = "https://api.github.com/orgs/nodejs/repos?per_page=5";
-    fetch(requestString, {
-        mode: 'no-cors'
-    }).then((response) =>{
-        if(response.status == 200){
-            console.log(response);
+    // formatting the request
+    var requestString = weatherApiUrl + "?"
+    requestString += "&lat=" + lat;
+    requestString += "&lon=" + lon;
+    requestString += "&appid=" + myApiKey;
+    console.log("request string: " + requestString);
+
+    // fetching the data from the API
+    var data  = await fetch(requestString).then((response) =>{
+        if (response.status === 200){
+            return response.json();
         }
-        return response.json();
-    }).then((data) =>{
+        return response.status;
+    }).then((data) => {
         console.log(data);
+        if (typeof data == "number"){
+            return data;
+        }
+        console.log("Data found: ", data);
+        return data;
     });
+    return data;
+}
 
+/**
+ * Returns latitude and longitude of a search query string.
+ * @param {string} query 
+ * @returns {object} location - holder object for the information
+ * @returns {number} location.lat - the latitude of the location
+ * @returns {number} location.lon - the longitude of the location
+ * @returns {null} returned if there are no results
+ */
+async function fetchLocation(query){
+    // format the request
+    var requestString = geoApi;
+    requestString += "?q=" + query;
+    requestString += "&limit=1";
+    requestString += "&appid=" + myApiKey;
+    console.log("getting the location of: " + query);
+    // grab the data!
+    var geoData = await fetch(requestString).then((request)=>{
+        // if all is well and good send us the goods
+        if(request.status == 200){
+            return request.json();
+        }
+        return null;
+    }).then((data)=>{
+        // if we got data, return said data 
+        if (data){
+            console.log("found something: ", data);
+            return {lat: data[0].lat, lon: data[0].lon};
+        }
+        return null;
+    });
+    
+    // return whatever we got from the fetch request
+    return geoData;
 }
 
 /**
  * Searches for cities and appropriately adds/modifies DOM elements for it.
- * @param {string} queryString 
+ * @param {string} query the query the user sent the engine
  */
-function searchCity (queryString){
-    console.log("doing an API search with: " + queryString);
+ async function searchCity (query){
+    console.log("doing an API search with: " + query);
     
     // clear the search box first
     searchBox.val("");
 
+    // TODO: use local storage to hold results
+
     // fetch from the API
-    
+    var location = await fetchLocation(query);
     // check if response is good
+    if (!location){
+        console.log("didn't get a result for searching for: " + query);
+        return;
+    }
 
-    // set DOM elements as approriate
+    // fetch the city from the API
+    var weather = await fetchWeather(location.lat, location.lon);
     
+    // propogate those values to the DOM
+    setCity(weather);
+
     // add the city to the history 
-
-    // set the current weather elements to reflect what we want.
-
+    searchHistory.push(query);
+    addSearchHistory(query);
 }
+
 
 /**
  * sets a card's weather conditions given both an object and a card
@@ -138,14 +216,60 @@ function searchCity (queryString){
  * @param {object} conditions the conditions to set that card to
  */
 function setCard(card, conditions){
+    // TODO
+    
     // City name
     // Date
-// icon for conditions
-// temperature
-// humidity
-// wind speed
-// UV index
+    // icon for conditions
+    // temperature
+    // humidity
+    // wind speed
+    // UV index
+}
 
+/**
+ * Makes a search history element for the given search query and appends 
+ * it to the DOM
+ * @param {string} query 
+ */
+function addSearchHistory(query){
+    // make our base item with the appropiate data information
+    var searchItem = $("<div class='search-item mt-3' data-query='"+
+    query +"'></div>");
+
+    var card = $("<div class='card bg-primary text-light'></div>");
+    var body = $("<div class='card-body'></div>");
+    var text = $("<h5>" + query + "<h5>");
+    // TODO formatting for the results
+
+    // making the text a clickable link that sets the information
+    text.on("click", ()=>setCity(query));
+    
+    body.append(text);
+    card.append(body);
+    searchItem.append(card);
+
+    searchHistoryContainer.prepend(searchItem);
+}
+
+/**
+ * Sets the DOM to reflect the given data
+ * @param {object} conditions conditions object fetched from database
+ */
+function setCity(conditions){
+    // City name
+    console.log("Got a city! Lets update our DOM");
+    console.log(conditions);
+
+    // Date -> set up localization? TODO
+
+    
+    // icon for conditions
+
+    // temperature
+    // humidity
+    // wind speed
+    // UV index
 }
 
 /*******************************************************************************
@@ -168,13 +292,14 @@ document.addEventListener('keydown', (event) =>{
     // check if the bar is focused return if not.
     if (!($("#search-box").is(":focus"))) {
         return;
-      }
+    }
     
     // get the search bar text
     var searchString = searchBox.val();
     searchCity(searchString);
-
 });
 
 // add a listener for the search button to send the search as well
-searchButton.on("click", searchCity(searchBox.val()));
+searchButton.on("click", ()=> searchCity(searchBox.val()));
+
+// TODO: local storage for search history
