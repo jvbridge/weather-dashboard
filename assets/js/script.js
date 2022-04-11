@@ -227,17 +227,28 @@ async function fetchLocation(query){
  * sets a card's weather conditions given both an object and a card
  * @param {object} card the jquery object for that card
  * @param {object} conditions the conditions to set that card to
+ * @param {string} dayOfWeek the day of the week this card represents
  */
-function setCard(card, conditions){
+function setCard(card, conditions, dayOfWeek){
+    console.log("setting up card: " , card);
+    console.log("using conditions: ", conditions);
     // TODO: make this set a card given an index
-    
-    // City name
-    // Date
+
+    // set the title
+    card.children("h6").text(dayOfWeek);
+
     // icon for conditions
+    var iconURL = imageSrc + conditions.weather[0].icon + "@2x.png"
+    var iconEle = $("<img class='img-thumbnail' src='"+ iconURL + "'></img>");
+    card.append(iconEle);
+
     // temperature
+    var temperatureEle = $("<div>Temp: "+ conditions.temp.day +"</div>");
+    card.append(temperatureEle);
+
     // humidity
-    // wind speed
-    // UV index
+    var humidityEle = $("<div>Hum: " + conditions.humidity + "%</div>")
+    card.append(humidityEle);
 }
 
 /**
@@ -273,8 +284,6 @@ function setCurrentWeather(conditions){
     // City name
     console.log("Got a city! Lets update our DOM");
     console.log(conditions);
-
-    // Date -> TODO:set up localization
     
     // icon for conditions
 
@@ -297,7 +306,22 @@ function setCurrentWeather(conditions){
  */
 function setWeeklyWeather(days){
     console.log("Got: ", days);
-    // TODO: propogate
+    
+    // propogate the value for each day
+    dayEles.forEach((value, index) =>{
+        var dayOfWeek;
+        if (index === 0){
+            dayOfWeek ="Today";
+        } else if (index === 1) {
+            dayOfWeek = "Tom";
+        } else{
+            var day = moment();
+            day.add(index,"days");
+            dayOfWeek = day.format("ddd");
+            console.log("that day is: " + day.format("ddd"));
+        }
+        setCard(value, days[index], dayOfWeek);
+    });
 }
 
 /**
@@ -305,7 +329,7 @@ function setWeeklyWeather(days){
  */
 function createCard (){
     var cardNumber = dayEles.length;
-    var card = $("<div id=day-'" + cardNumber + "' class='card m-2'></div>");
+    var card = $("<div id=day-'" + cardNumber + "' class='card m-2 col-1'></div>");
     var cardBody = $("<div class='card-body'></div>");
     var cardTitle = $("<h6 class='card-title'></h6>");
     var weatherInfo = $("<div id='day-"+ cardNumber + "-info></div>");
@@ -359,6 +383,7 @@ for (var i = 0; i < daysDisplayed; i++){
  navigator.geolocation.getCurrentPosition(async (position) =>{
     // if we are successful
     console.log("success!");
+    locationEle.text("San Francisco");
     var weather = await fetchWeather(position.coords.latitude, position.coords.longitude)
     setCurrentWeather(weather.current);
     setWeeklyWeather(weather.daily);
