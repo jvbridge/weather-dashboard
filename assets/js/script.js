@@ -37,7 +37,7 @@ var searchButton = $("#search-button");
 /**
  * The number of days we are going to display on the main day bar
  */
-var daysDisplayed = 7
+var daysDisplayed = 5;
 
 /**
  * Reference to the current time element
